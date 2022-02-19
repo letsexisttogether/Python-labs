@@ -2,29 +2,59 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 
-
-def cut(numObj, digits=0):
-    return f"{numObj:.{digits}f}"
+plt.style.use('seaborn-whitegrid')
 
 
-# figure is a window to replace graphics on
-# axes is a graphic which is placed there
-figure, axes = plt.subplots()
-axes.set_title("Графік варіанту №3")
-axes.set_xlabel("Вісь X")
-axes.set_ylabel("Вісь Y")
+def MakeNewAx(figure, pos, name):
+    ax = figure.add_subplot(1, 2, pos)
+    ax.set_title(name)
+    ax.set_xlabel("Вісь X")
+    ax.set_ylabel("Вісь Y")
+    return ax
 
-while True:
-    os.system("cls")
-    x_start = float(cut(float(input("Enter x_start: ")) * np.pi, 4))
-    x_end = float(cut(float(input("Enter x_end: ")) * np.pi, 4))
-    step = float(cut(float(input("Enter the step: ")) * np.pi, 4))
-    array_x = np.linspace(x_start, x_end, int((x_end - x_start) / step))
-    for i in range(0, len(array_x) - 1):
-        if np.cos(array_x[i]) == 0:
-            array_x[i] = np.nan
-    # array_x[(np.cos(array_x) == 0)] = np.nan
-    axes.plot(array_x, array_x / np.cos(array_x), color="blue", linestyle='--')
-    for element in array_x:
-        print("{:.4f} {:.4f}".format(element, np.cos(element)))
-    plt.show()
+
+def FloatValueEnter(msg):
+    while True:
+        floatVal = input(msg)
+        try:
+            taker = float(floatVal)
+        except ValueError:
+            continue
+        else:
+            return float(floatVal)
+
+
+def PrintTable(x_start, x_end, step):
+    array_x = np.linspace(x_start, x_end, int(x_end - x_start) / step)
+    print("X\tf(X)")
+    for x in array_x:
+        print(f"{x}\t{array_x / np.cos(x)}")
+
+
+x_start = FloatValueEnter('Введіть початкову точку Х: ')
+x_end = FloatValueEnter('Введіть кінцеву точку X: ')
+if x_end < x_start:
+    x_start, x_end = x_end, x_start
+step = np.abs(FloatValueEnter('Введіть крок табуляції: '))
+if step == 0:
+    step = (x_end - x_start) / 10
+
+PrintTable(x_start, x_end, step)
+
+figure = plt.figure(figsize=(10, 10))
+mainAx = MakeNewAx(figure, 1, "Графік")
+mainAx.set_xlim(x_start, x_end)
+mainAx.set_ylim(-40, 40)
+
+# main graphic
+array_x = np.linspace(x_start, x_end, 10000)
+zero_points = []
+for i in range(len(array_x)):
+    if np.abs(np.cos(array_x[i])) < 0.001:
+        zero_points.append(array_x[i])
+        array_x[i] = np.nan
+mainAx.plot(array_x, array_x / np.cos(array_x), color='black')
+for x in zero_points:
+    mainAx.axvline(x=x, linestyle='--')
+# extra graphic
+plt.show()
