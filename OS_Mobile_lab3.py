@@ -32,7 +32,7 @@ def ChangeMainImage() -> None:
     mainImagePath = filedialog.askopenfilename(initialdir="/", title="Select a File",
                                                filetypes=(("JPG", "*.jpg"), ("BMP", "*.bmp")))
     ChangeMainImageLabel(mainImagePath)
-    ChangeMainImageNameLabel()
+    ChangeMainImageNameLabel(mainImagePath)
     ChangeSizeEntries(mainImagePath)
 
 
