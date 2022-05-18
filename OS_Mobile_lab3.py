@@ -1,39 +1,48 @@
-from tkinter import PhotoImage, Button, Label, Tk, Entry
-from tkinter import filedialog
+from tkinter import PhotoImage, filedialog
+from tkinter import Button, Label, Tk, Entry
 from PIL import Image, ImageFilter, ImageTk
 
 
-def ChangePicture():
-    global mainImagePath
-    global imageLabel, nameText
+def ChangeMainImageLabel(imagePath : str) -> None:
+    global imageLabel
+    currentImage = Image.open(imagePath)
+    resizedCurrentImage = currentImage.resize((500, 480))
+    newMainImageLabelPhoto = ImageTk.PhotoImage(resizedCurrentImage)
+    imageLabel.configure(image=newMainImageLabelPhoto)
+    imageLabel.image = newMainImageLabelPhoto
+
+
+def ChangeSizeEntries(imagePath : str) -> None:
     global xSizeEnter, ySizeEnter
-    mainImagePath = filedialog.askopenfilename(initialdir="/", title="Select a File",
-                                               filetypes=(("JPG", "*.jpg"), ("BMP", "*.bmp")))
-    # There's an opportunity not to select new image
-    if mainImagePath == "":
-        return
-    # Changing of the image to work with
-    mainImage = Image.open(mainImagePath)
-    # Changing of the label of the image to work with
-    resizedMainImage = mainImage.resize((500, 480))  # making image fit to the window
-    imgLabel_photo = ImageTk.PhotoImage(resizedMainImage)
-    imageLabel.configure(image=imgLabel_photo)
-    imageLabel.image = imgLabel_photo
-    # Changing file name, that is shown on the screen
-    nameText.configure(text=f"Назва: {mainImagePath.split('/')[-1]}")
-    # Changing size preset
+    currentImage = Image.open(imagePath)
     xSizeEnter.delete(0, len(xSizeEnter.get()))
     ySizeEnter.delete(0, len(ySizeEnter.get()))
-    xSizeEnter.insert(0, str(mainImage.size[0]))
-    ySizeEnter.insert(0, str(mainImage.size[1]))
+    xSizeEnter.insert(0, str(currentImage.size[0]))
+    ySizeEnter.insert(0, str(currentImage.size[1]))
 
 
-def SavePhoto():
+def ChangeMainImageNameLabel(imagePath : str) -> None:
+    global imageNameLabel
+    imageNameLabel.configure(text=f"Назва: {imagePath.split('/')[-1]}")
+
+
+def ChangeMainImage() -> None:
+    """Changes current picture file and its label to show on the screen"""
+    global mainImagePath
+    mainImagePath = filedialog.askopenfilename(initialdir="/", title="Select a File",
+                                               filetypes=(("JPG", "*.jpg"), ("BMP", "*.bmp")))
+    ChangeMainImageLabel(mainImagePath)
+    ChangeMainImageNameLabel()
+    ChangeSizeEntries(mainImagePath)
+
+
+def SaveImage():
+    """Saves current selected image"""
     global mainImagePath
     global imageFormat, changeImageFilter, imageSize
     global xSizeEnter, ySizeEnter
     mainImage = Image.open(mainImagePath)
-    mainImage = mainImage.convert("RGB")
+    mainImage = mainImage.convert("RGB")    # it doesn't allow working with JPG without RGB
     if changeImageFilter:
         mainImage.filter(ImageFilter.DETAIL)
     imageSize = (int(xSizeEnter.get()), int(ySizeEnter.get()))
@@ -42,6 +51,8 @@ def SavePhoto():
 
 
 def ChangeFormat(changeTO: str):
+    """Changes current format
+    and related buttons"""
     global imageFormat
     global jpgButton, bmpButton
     imageFormat = changeTO
@@ -54,6 +65,8 @@ def ChangeFormat(changeTO: str):
 
 
 def SetFilter(isSetFilter: bool):
+    """Changes the image's filter
+    and related buttons"""
     global changeImageFilter
     global filterButton, nonFilterButton
     changeImageFilter = isSetFilter
@@ -87,12 +100,12 @@ if __name__ == '__main__':
 
     # Change and save buttons
     changeImageButton = Button(mainWindow, fg="black", bg="white", height=2, width=30,
-                               text="Змінити зображення", command=ChangePicture)
+                               text="Змінити зображення", command=ChangeMainImage)
     saveButton = Button(mainWindow, fg="black", bg="white", height=2, width=30,
-                        text="Зберігти фото", command=SavePhoto)
+                        text="Зберігти фото", command=SaveImage)
 
-    # Image file name
-    nameText = Label(mainWindow, fg="lime", bg="black", height=2, width=35,
+    # Image file name without its path
+    imageNameLabel = Label(mainWindow, fg="lime", bg="black", height=2, width=35,
                      text=f"Назва: {mainImagePath.split('/')[-1]}", font=3)
 
     # Format change
@@ -133,7 +146,7 @@ if __name__ == '__main__':
     # Labels' placing
     backgroundLabel.place(x=0, y=0)
     imageLabel.place(x=40, y=60)
-    nameText.place(x=570, y=12)
+    imageNameLabel.place(x=570, y=12)
     formatText.place(x=570, y=100)
     sizeText.place(x=570, y=280)
     filterText.place(x=570, y=448)
